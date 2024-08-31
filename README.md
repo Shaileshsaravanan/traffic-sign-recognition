@@ -44,7 +44,7 @@ Ensure that you have the following dependencies installed:
 
 The system consists of three primary Python modules:
 
-- **`main.py`**: The entry point of the program.
+- **`main.py`**: The entry point of the program. It processes video frames in real-time, detects potential traffic signs, classifies them using a pre-trained SVM model, and tracks them across frames.
 - **`classification.py`**: Contains the SVM model used to classify traffic signs.
 - **`common.py`**: Provides utility functions for defining the SVM model.
 - **`data_svm.dat`**: Stores the trained SVM model.
@@ -62,13 +62,13 @@ You can run the program in two ways:
 ### Using Default Arguments:
 
 ```bash
-python3 main/main.py
+python3 main/main.py --file_name video.mp4
 ```
 
 ### Using Custom Arguments:
 
 ```bash
-python3 main/main.py [options]
+python3 main/main.py --file_name video.mp4 [options]
 ```
 
 #### Optional Arguments:
@@ -104,3 +104,54 @@ The codebase is organized into three main folders:
 - **`main/`**: Contains the main program files.
 - **`test/`**: Includes testing scripts and files.
 - **`train/`**: Holds the training scripts and dataset.
+
+## 9. Explanation of `main.py`
+
+The `main.py` script is the entry point for the traffic sign detection and classification system. The script processes video frames in real-time, detects potential traffic signs, and classifies them using a pre-trained SVM model. The detected signs are then tracked throughout the video using optical flow techniques.
+
+Here's a step-by-step breakdown of what happens in `main.py`:
+
+1. **Importing Necessary Libraries**:
+   - The script imports various libraries, including `cv2` (OpenCV), `numpy`, and others for image processing, blob detection, argument parsing, and file handling.
+
+2. **Defining Traffic Sign Labels**:
+   - The `SIGNS` list defines the different types of traffic signs that the model can classify, such as "STOP", "TURN LEFT", "ONE WAY", etc.
+
+3. **Cleaning Up Old Files**:
+   - The `clean_images()` function removes any previously generated image files in the `main/` directory. This ensures that the output directory is clean before processing new video frames.
+
+4. **Preprocessing the Image**:
+   - Several functions are defined to preprocess images:
+     - `constrastLimit(image)` enhances the contrast of the image.
+     - `LaplacianOfGaussian(image)` applies a Laplacian of Gaussian filter to detect edges.
+     - `binarization(image)` converts the image into a binary (black and white) format.
+     - `preprocess_image(image)` combines the above steps to prepare the image for further processing.
+
+5. **Traffic Sign Detection**:
+   - Functions like `removeSmallComponents(image, threshold)`, `findContour(image)`, `contourIsSign(perimeter, centroid, threshold)`, etc., work together to detect contours in the processed image. Contours that resemble traffic signs are identified and cropped.
+
+6. **Localization and Classification**:
+   - The `localization()` function processes each video frame, detects potential signs, classifies them using the SVM model, and draws bounding boxes and labels around the detected signs.
+
+7. **Tracking Detected Signs**:
+   - The script uses optical flow (CamShift algorithm) to track the detected signs across subsequent frames.
+
+8. **Video Processing Loop**:
+   - The main loop reads frames from the video file, processes each frame to detect and classify traffic signs, and outputs the processed video with labeled signs.
+
+### Enabling and Using Command-Line Arguments
+
+The script uses the `argparse` library to handle command-line arguments, which allows users to customize how the script runs. Here's how arguments are enabled and used in the script:
+
+1. **Argument Parsing**:
+   - The `argparse` library is used to define and parse command-line arguments. This is done using the `argparse.ArgumentParser` class. In the `main()` function, arguments are defined using the `add_argument()` method.
+
+2. **Available Arguments**:
+   - `--file_name`: Specifies the path to the video file to be analyzed.
+   - `--min_size_components`: Sets the minimum size of connected components to be reserved during processing.
+   - `--similarity_contour_with_circle`: Sets the similarity threshold to a circle, used in contour detection.
+
+3. **Usage**:
+   - Users can run the script with default settings or customize the execution using arguments. For example:
+     - Default execution: `python3 main/main.py --file_name video.mp4`
+     - Custom execution: `python3 main/main.py --file_name video.mp4 --min_size_components 150 --similarity_contour_with_circle 0.7`

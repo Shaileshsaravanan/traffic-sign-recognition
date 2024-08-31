@@ -129,5 +129,5 @@ print('Test Score:', score[0])
 print('Test Accuracy:', score[1])
 
 # STORE THE MODEL AS A PICKLE OBJECT
-model.save('sign_classifier_v1.0.model')
+model.save('sign_classifier_v1.2.model')
 cv2.waitKey(0)
